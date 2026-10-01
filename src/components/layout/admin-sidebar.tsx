@@ -87,7 +87,7 @@ export function AdminSidebar({ user }: { user: { email: string } }) {
           Admin
         </h2>
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger>
+          <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="text-slate-300 hover:bg-slate-800 hover:text-white">
               <Menu className="h-6 w-6" />
             </Button>

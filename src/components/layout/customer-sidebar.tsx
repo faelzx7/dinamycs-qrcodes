@@ -70,7 +70,7 @@ export function CustomerSidebar({ user }: CustomerSidebarProps) {
       <div className="md:hidden flex items-center justify-between p-4 border-b border-border/40 bg-card">
         <h2 className="text-xl font-bold">QR SaaS</h2>
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger>
+          <SheetTrigger asChild>
             <Button variant="ghost" size="icon">
               <Menu className="h-5 w-5" />
             </Button>

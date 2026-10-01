@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { AdminSidebar } from '@/components/layout/admin-sidebar'
 
@@ -14,13 +15,18 @@ export default async function AdminLayout({
     redirect('/login')
   }
   
-  const { data: profile } = await supabase
+  // Use Admin Client to bypass RLS and fetch exact role securely
+  const adminSupabase = createAdminClient()
+  const { data: profile, error } = await adminSupabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
   
+  console.log('ADMIN LAYOUT CHECK -> user:', user.id, 'profile:', profile, 'error:', error)
+  
   if (!profile || profile.role !== 'admin') {
+    console.log('REDIRECTING TO DASHBOARD!')
     redirect('/dashboard')
   }
   

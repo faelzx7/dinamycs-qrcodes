@@ -46,18 +46,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  if (isAdminRoute && user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+  // Removendo a checagem de banco no Edge (middleware) pois o RLS e headers as vezes conflitam aqui.
+  // A checagem de admin já está sendo feita e garantida no src/app/(admin)/layout.tsx!
 
-    if (profile?.role !== 'admin') {
-      url.pathname = '/dashboard'
-      return NextResponse.redirect(url)
-    }
-  }
 
   return supabaseResponse
 }
