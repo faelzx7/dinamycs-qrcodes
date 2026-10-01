@@ -70,10 +70,8 @@ export function CustomerSidebar({ user }: CustomerSidebarProps) {
       <div className="md:hidden flex items-center justify-between p-4 border-b border-border/40 bg-card">
         <h2 className="text-xl font-bold">QR SaaS</h2>
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <Menu className="h-5 w-5" />
-            </Button>
+          <SheetTrigger className="h-10 w-10 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground">
+            <Menu className="h-5 w-5" />
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-[250px]">
             <NavContent />
