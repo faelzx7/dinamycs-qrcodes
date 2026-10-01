@@ -25,6 +25,7 @@ export interface QRCode {
   id: string;
   code: string;
   status: QRStatus;
+  name: string | null;
   destination_type: DestinationType | null;
   destination_url: string | null;
   owner_id: string | null;
@@ -79,6 +80,7 @@ export interface QRBatchWithCounts extends QRBatch {
 
 export interface ConfigureQRPayload {
   code: string;
+  name: string;
   destination_type: DestinationType;
   destination_url: string;
 }
@@ -91,6 +93,7 @@ export interface GenerateBatchPayload {
 
 export interface UpdateQRDestinationPayload {
   qr_id: string;
+  name: string;
   destination_type: DestinationType;
   destination_url: string;
 }

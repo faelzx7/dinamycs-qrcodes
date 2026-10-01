@@ -7,6 +7,7 @@ import type { DestinationType } from '@/types/database'
  */
 export async function configureQRCode(
   code: string,
+  name: string,
   destinationType: DestinationType,
   destinationUrl: string,
   ownerId: string
@@ -17,6 +18,7 @@ export async function configureQRCode(
     .from('qr_codes')
     .update({
       status: 'active',
+      name: name,
       destination_type: destinationType,
       destination_url: destinationUrl,
       owner_id: ownerId,
@@ -40,6 +42,7 @@ export async function configureQRCode(
  */
 export async function updateQRDestination(
   qrId: string,
+  name: string,
   destinationType: DestinationType,
   destinationUrl: string,
   userId: string
@@ -68,6 +71,7 @@ export async function updateQRDestination(
   const { error } = await supabase
     .from('qr_codes')
     .update({
+      name: name,
       destination_type: destinationType,
       destination_url: destinationUrl,
     })

@@ -47,7 +47,8 @@ export async function createBatch(
     .single()
   
   if (batchError || !batch) {
-    return { success: false, error: 'Erro ao criar lote.' }
+    console.error('Batch generation error:', batchError)
+    return { success: false, error: `Erro ao criar lote: ${batchError?.message || 'Desconhecido'}` }
   }
   
   // Insert QR codes in chunks of 500

@@ -21,6 +21,7 @@ export async function getQRCodeByCode(code: string) {
 
 export async function configureQR(formData: {
   code: string
+  name: string
   destination_type: DestinationType
   destination_url: string
 }) {
@@ -46,6 +47,7 @@ export async function configureQR(formData: {
 
   const result = await configureQRCode(
     parsed.data.code,
+    parsed.data.name,
     parsed.data.destination_type,
     parsed.data.destination_url,
     ownerId
@@ -60,6 +62,7 @@ export async function configureQR(formData: {
 
 export async function updateQRAction(formData: {
   qr_id: string
+  name: string
   destination_type: DestinationType
   destination_url: string
 }) {
@@ -79,6 +82,7 @@ export async function updateQRAction(formData: {
 
   const result = await updateQRDestination(
     parsed.data.qr_id,
+    parsed.data.name,
     parsed.data.destination_type,
     parsed.data.destination_url,
     user.id

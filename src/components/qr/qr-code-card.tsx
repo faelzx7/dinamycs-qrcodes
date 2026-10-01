@@ -1,8 +1,7 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { QRCode } from "@/types/database"
 import { QRCodeStatus } from "./qr-code-status"
-import { DESTINATION_TYPES } from "@/lib/constants"
-import { Link2, Smartphone, MapPin, Globe, Camera, MessageCircle, BarChart2, Calendar, Settings } from "lucide-react"
+import { BarChart2, Calendar, Settings, Link2 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
@@ -12,34 +11,24 @@ interface QRCodeCardProps {
   scansToday?: number
 }
 
-const getDestinationIcon = (type: string | null) => {
-  switch (type) {
-    case 'whatsapp': return <MessageCircle className="h-4 w-4" />
-    case 'instagram': return <Camera className="h-4 w-4" />
-    case 'website': return <Globe className="h-4 w-4" />
-    case 'google': return <MapPin className="h-4 w-4" />
-    case 'custom': return <Link2 className="h-4 w-4" />
-    default: return <Smartphone className="h-4 w-4" />
-  }
-}
-
 export function QRCodeCard({ qr, scanCount = 0, scansToday = 0 }: QRCodeCardProps) {
-  const destConfig = DESTINATION_TYPES.find(d => d.value === qr.destination_type)
-  const destName = destConfig?.label || 'Não configurado'
+  const destName = qr.name || qr.code
   const destUrl = qr.destination_url || 'Sem destino'
 
   return (
     <Card className="flex flex-col h-full overflow-hidden border-border/40 bg-card">
       <CardHeader className="pb-4">
         <div className="flex justify-between items-start">
-          <CardTitle className="text-xl font-bold font-mono tracking-wider">{qr.code}</CardTitle>
+          <CardTitle className="text-xl font-bold font-mono tracking-wider truncate mr-2" title={destName}>
+            {destName}
+          </CardTitle>
           <QRCodeStatus status={qr.status} />
         </div>
       </CardHeader>
       <CardContent className="flex-1 space-y-4">
         <div className="flex items-center space-x-2 text-sm text-muted-foreground bg-muted/30 p-2 rounded-md">
-          {getDestinationIcon(qr.destination_type)}
-          <span className="font-medium truncate flex-1">{destName}</span>
+          <Link2 className="h-4 w-4" />
+          <span className="font-medium truncate flex-1 font-mono text-xs" title={qr.code}>Código: {qr.code}</span>
         </div>
         <p className="text-xs text-muted-foreground truncate w-full" title={destUrl}>
           {destUrl}
