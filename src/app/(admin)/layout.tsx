@@ -26,8 +26,17 @@ export default async function AdminLayout({
   console.log('ADMIN LAYOUT CHECK -> user:', user.id, 'profile:', profile, 'error:', error)
   
   if (!profile || profile.role !== 'admin') {
-    console.log('REDIRECTING TO DASHBOARD!')
-    redirect('/dashboard')
+    return (
+      <div className="p-8 bg-black text-red-500 font-mono">
+        <h1 className="text-2xl font-bold mb-4">Acesso Negado - Debug Info</h1>
+        <p><strong>User ID:</strong> {user.id}</p>
+        <p><strong>Profile Data:</strong> {JSON.stringify(profile)}</p>
+        <p><strong>Database Error:</strong> {JSON.stringify(error)}</p>
+        <div className="mt-4">
+          <a href="/dashboard" className="text-white underline">Voltar pro Dashboard</a>
+        </div>
+      </div>
+    )
   }
   
   return (
