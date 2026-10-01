@@ -100,12 +100,12 @@ export default async function QRCodeDetailPage({ params }: { params: Promise<{ i
              <h3 className="text-lg font-semibold w-full text-left">Placa</h3>
              <div className="bg-white p-4 rounded-lg">
                 <img 
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/r/${qr.code}`)}`} 
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/q/${qr.code}`)}`} 
                   alt={`QR Code ${qr.code}`} 
                   className="w-32 h-32"
                 />
              </div>
-             <p className="text-xs text-muted-foreground text-center">URL Pública:<br/> {`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/r/${qr.code}`}</p>
+             <p className="text-xs text-muted-foreground text-center">URL Pública:<br/> {`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/q/${qr.code}`}</p>
           </div>
         </div>
       </div>

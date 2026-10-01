@@ -67,9 +67,10 @@ export default function QRGeneratorPage() {
       const rows = 5
       const qrSize = (pageWidth - margin * 2 - (cols - 1) * 10) / cols
       
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : APP_URL
       const mappedCodes = codes.map(c => ({
         code: c.code,
-        url: `${APP_URL}/q/${c.code}`
+        url: `${baseUrl}/q/${c.code}`
       }))
 
       for (let i = 0; i < mappedCodes.length; i++) {
