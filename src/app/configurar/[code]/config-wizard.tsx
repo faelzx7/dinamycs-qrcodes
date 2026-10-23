@@ -1,7 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useTransition } from 'react'
 import { configureQR } from '@/actions/qr.actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,12 +15,11 @@ interface ConfigWizardProps {
 }
 
 export function ConfigWizard({ code, isAuthenticated }: ConfigWizardProps) {
-  const router = useRouter()
   const [step, setStep] = useState<WizardStep>('form')
   const [name, setName] = useState('')
   const [destinationUrl, setDestinationUrl] = useState('')
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,34 +36,31 @@ export function ConfigWizard({ code, isAuthenticated }: ConfigWizardProps) {
 
     if (!isAuthenticated) {
       const redirectUrl = `/configurar/${code}`
-      // Remove destination type since it's hardcoded to 'custom' now
       const loginUrl = `/login?redirect=${encodeURIComponent(redirectUrl)}&type=custom&url=${encodeURIComponent(destinationUrl)}&name=${encodeURIComponent(name)}`
-      router.push(loginUrl)
+      window.location.href = loginUrl
       return
     }
 
-    setLoading(true)
-    setError(null)
-
-    try {
-      const result = await configureQR({
-        code,
-        name,
-        destination_type: 'custom',
-        destination_url: destinationUrl
-      })
-      
-      if (result.success) {
-        setStep('success')
-      } else {
-        throw new Error(result.error || 'Erro ao configurar placa')
+    startTransition(async () => {
+      try {
+        const result = await configureQR({
+          code,
+          name,
+          destination_type: 'custom',
+          destination_url: destinationUrl
+        })
+        
+        if (result.success) {
+          setStep('success')
+        } else {
+          setError(result.error || 'Erro ao configurar placa')
+          setStep('error')
+        }
+      } catch (err: any) {
+        setError(err.message || 'Ocorreu um erro inesperado')
+        setStep('error')
       }
-    } catch (err: any) {
-      setError(err.message || 'Ocorreu um erro inesperado')
-      setStep('error')
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
   return (
@@ -119,10 +114,10 @@ export function ConfigWizard({ code, isAuthenticated }: ConfigWizardProps) {
 
             <Button 
               type="submit"
-              disabled={loading}
+              disabled={isPending}
               className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-lg py-6 h-auto mt-6"
             >
-              {loading ? 'Ativando...' : (isAuthenticated ? 'Ativar minha placa' : 'Fazer Login e Ativar')}
+              {isPending ? 'Ativando...' : (isAuthenticated ? 'Ativar minha placa' : 'Fazer Login e Ativar')}
             </Button>
           </form>
         </div>
@@ -139,7 +134,7 @@ export function ConfigWizard({ code, isAuthenticated }: ConfigWizardProps) {
           </p>
           <div className="pt-8">
             <Button 
-              onClick={() => router.push('/dashboard')}
+              onClick={() => { window.location.href = '/dashboard' }}
               className="bg-white text-black hover:bg-zinc-200 text-lg px-8 py-6 h-auto rounded-full font-medium"
             >
               Ir para o meu Painel
