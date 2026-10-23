@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 import { configureQR } from '@/actions/qr.actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,11 +19,9 @@ export function ConfigWizard({ code, isAuthenticated }: ConfigWizardProps) {
   const [name, setName] = useState('')
   const [destinationUrl, setDestinationUrl] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [isPending, startTransition] = useTransition()
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
+  const handleActivate = async () => {
     if (!name.trim()) {
       setError('O nome é obrigatório')
       return
@@ -41,26 +39,30 @@ export function ConfigWizard({ code, isAuthenticated }: ConfigWizardProps) {
       return
     }
 
-    startTransition(async () => {
-      try {
-        const result = await configureQR({
-          code,
-          name,
-          destination_type: 'custom',
-          destination_url: destinationUrl
-        })
-        
-        if (result.success) {
-          setStep('success')
-        } else {
-          setError(result.error || 'Erro ao configurar placa')
-          setStep('error')
-        }
-      } catch (err: any) {
-        setError(err.message || 'Ocorreu um erro inesperado')
+    setLoading(true)
+    setError(null)
+
+    try {
+      const result = await configureQR({
+        code,
+        name,
+        destination_type: 'custom',
+        destination_url: destinationUrl
+      })
+
+      if (result.success) {
+        setStep('success')
+      } else {
+        setError(result.error || 'Erro ao configurar placa')
         setStep('error')
       }
-    })
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Ocorreu um erro inesperado'
+      setError(msg)
+      setStep('error')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -72,7 +74,7 @@ export function ConfigWizard({ code, isAuthenticated }: ConfigWizardProps) {
             <p className="text-zinc-400">Dê um nome para identificar a placa e insira o link de destino.</p>
           </div>
           
-          <form onSubmit={handleSubmit} className="space-y-4 bg-zinc-800 p-6 rounded-xl">
+          <div className="space-y-4 bg-zinc-800 p-6 rounded-xl">
             {error && (
               <div className="p-4 rounded-lg bg-red-900/50 border border-red-800 text-red-200 text-sm mb-4">
                 {error}
@@ -113,13 +115,14 @@ export function ConfigWizard({ code, isAuthenticated }: ConfigWizardProps) {
             )}
 
             <Button 
-              type="submit"
-              disabled={isPending}
+              type="button"
+              onClick={handleActivate}
+              disabled={loading}
               className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-lg py-6 h-auto mt-6"
             >
-              {isPending ? 'Ativando...' : (isAuthenticated ? 'Ativar minha placa' : 'Fazer Login e Ativar')}
+              {loading ? 'Ativando...' : (isAuthenticated ? 'Ativar minha placa' : 'Fazer Login e Ativar')}
             </Button>
-          </form>
+          </div>
         </div>
       )}
 
