@@ -1,8 +1,10 @@
 import { notFound, redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import { getQRCodeByCode } from '@/actions/qr.actions'
 import { ConfigWizard } from './config-wizard'
 import { APP_NAME } from '@/lib/constants'
 import { createClient } from '@/lib/supabase/server'
+import { Loader2 } from 'lucide-react'
 
 interface PageProps {
   params: Promise<{ code: string }>
@@ -26,7 +28,7 @@ export default async function ConfigurarPage(props: PageProps) {
   }
   
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user } } = await supabase.auth.getUser()
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50 flex flex-col items-center p-4 sm:p-8">
@@ -36,7 +38,14 @@ export default async function ConfigurarPage(props: PageProps) {
       </header>
 
       <main className="w-full max-w-2xl flex-1 flex flex-col">
-        <ConfigWizard code={params.code} isAuthenticated={!!session} />
+        <Suspense fallback={
+          <div className="w-full p-12 text-center flex flex-col items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-zinc-400 mb-2" />
+            <p className="text-sm text-zinc-500">Carregando formulário...</p>
+          </div>
+        }>
+          <ConfigWizard code={params.code} isAuthenticated={!!user} />
+        </Suspense>
       </main>
     </div>
   )

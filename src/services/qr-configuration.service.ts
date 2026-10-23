@@ -12,28 +12,34 @@ export async function configureQRCode(
   destinationUrl: string,
   ownerId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase = createAdminClient()
-  
-  const { data, error } = await supabase
-    .from('qr_codes')
-    .update({
-      status: 'active',
-      name: name,
-      destination_type: destinationType,
-      destination_url: destinationUrl,
-      owner_id: ownerId,
-      configured_at: new Date().toISOString(),
-    })
-    .eq('code', code.toUpperCase())
-    .eq('status', 'unconfigured')
-    .select()
-    .single()
-  
-  if (error || !data) {
-    return { success: false, error: 'Este QR Code já foi configurado ou não existe.' }
+  try {
+    const supabase = createAdminClient()
+    
+    const { data, error } = await supabase
+      .from('qr_codes')
+      .update({
+        status: 'active',
+        name: name,
+        destination_type: destinationType,
+        destination_url: destinationUrl,
+        owner_id: ownerId,
+        configured_at: new Date().toISOString(),
+      })
+      .eq('code', code.toUpperCase())
+      .eq('status', 'unconfigured')
+      .select()
+      .single()
+    
+    if (error || !data) {
+      console.error('configureQRCode DB error:', error)
+      return { success: false, error: 'Este QR Code já foi configurado ou não existe.' }
+    }
+    
+    return { success: true }
+  } catch (err: any) {
+    console.error('configureQRCode exception:', err)
+    return { success: false, error: err?.message || 'Erro ao comunicar com o banco de dados.' }
   }
-  
-  return { success: true }
 }
 
 /**

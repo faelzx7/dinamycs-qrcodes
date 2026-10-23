@@ -24,40 +24,39 @@ export async function configureQR(formData: {
   name: string
   destination_type: DestinationType
   destination_url: string
-}) {
-  // Validate input
-  const parsed = configureQRSchema.safeParse(formData)
-  if (!parsed.success) {
-    return { error: (parsed.error as any).errors[0]?.message || 'Dados inválidos' }
+}): Promise<{ success?: boolean; error?: string; requireAuth?: boolean }> {
+  try {
+    // Validate input
+    const parsed = configureQRSchema.safeParse(formData)
+    if (!parsed.success) {
+      return { error: (parsed.error as any).errors[0]?.message || 'Dados inválidos' }
+    }
+
+    // Get current user (must be authenticated to claim/configure plate)
+    const supabase = await createClient()
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+    if (userError || !user) {
+      return { error: 'Você precisa entrar na sua conta para ativar sua placa.', requireAuth: true }
+    }
+
+    const result = await configureQRCode(
+      parsed.data.code,
+      parsed.data.name,
+      parsed.data.destination_type,
+      parsed.data.destination_url,
+      user.id
+    )
+
+    if (!result.success) {
+      return { error: result.error }
+    }
+
+    return { success: true }
+  } catch (err: any) {
+    console.error('Erro ao configurar QR code:', err)
+    return { error: err?.message || 'Erro inesperado ao salvar configuração da placa.' }
   }
-
-  // Get current user (may or may not be authenticated)
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  let ownerId: string
-
-  if (user) {
-    ownerId = user.id
-  } else {
-    // Create a temporary anonymous sign-up or require auth
-    // For the MVP, require the user to create an account to configure
-    return { error: 'Você precisa criar uma conta para configurar sua placa.', requireAuth: true }
-  }
-
-  const result = await configureQRCode(
-    parsed.data.code,
-    parsed.data.name,
-    parsed.data.destination_type,
-    parsed.data.destination_url,
-    ownerId
-  )
-
-  if (!result.success) {
-    return { error: result.error }
-  }
-
-  return { success: true }
 }
 
 export async function updateQRAction(formData: {

@@ -1,11 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { configureQR } from '@/actions/qr.actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { CheckCircle2, LogIn } from 'lucide-react'
+import { CheckCircle2, LogIn, Loader2 } from 'lucide-react'
 
 type WizardStep = 'form' | 'success' | 'error'
 
@@ -15,26 +16,33 @@ interface ConfigWizardProps {
 }
 
 export function ConfigWizard({ code, isAuthenticated }: ConfigWizardProps) {
+  const searchParams = useSearchParams()
   const [step, setStep] = useState<WizardStep>('form')
-  const [name, setName] = useState('')
-  const [destinationUrl, setDestinationUrl] = useState('')
+  const [name, setName] = useState(searchParams.get('name') || '')
+  const [destinationUrl, setDestinationUrl] = useState(searchParams.get('url') || '')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   const handleActivate = async () => {
     if (!name.trim()) {
-      setError('O nome é obrigatório')
+      setError('O nome da placa é obrigatório')
       return
     }
 
-    if (!destinationUrl.trim() || (!destinationUrl.startsWith('http://') && !destinationUrl.startsWith('https://'))) {
-      setError('Insira uma URL válida (deve começar com http:// ou https://)')
+    let finalUrl = destinationUrl.trim()
+    if (!finalUrl) {
+      setError('Insira uma URL de destino')
       return
+    }
+
+    // Auto prepend https:// if missing
+    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+      finalUrl = 'https://' + finalUrl
     }
 
     if (!isAuthenticated) {
       const redirectUrl = `/configurar/${code}`
-      const loginUrl = `/login?redirect=${encodeURIComponent(redirectUrl)}&type=custom&url=${encodeURIComponent(destinationUrl)}&name=${encodeURIComponent(name)}`
+      const loginUrl = `/login?redirect=${encodeURIComponent(redirectUrl)}&url=${encodeURIComponent(finalUrl)}&name=${encodeURIComponent(name.trim())}`
       window.location.href = loginUrl
       return
     }
@@ -45,21 +53,23 @@ export function ConfigWizard({ code, isAuthenticated }: ConfigWizardProps) {
     try {
       const result = await configureQR({
         code,
-        name,
+        name: name.trim(),
         destination_type: 'custom',
-        destination_url: destinationUrl
+        destination_url: finalUrl
       })
 
       if (result.success) {
         setStep('success')
+      } else if (result.requireAuth) {
+        const redirectUrl = `/configurar/${code}`
+        const loginUrl = `/login?redirect=${encodeURIComponent(redirectUrl)}&url=${encodeURIComponent(finalUrl)}&name=${encodeURIComponent(name.trim())}`
+        window.location.href = loginUrl
       } else {
         setError(result.error || 'Erro ao configurar placa')
-        setStep('error')
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Ocorreu um erro inesperado'
+      const msg = err instanceof Error ? err.message : 'Ocorreu um erro ao salvar a placa'
       setError(msg)
-      setStep('error')
     } finally {
       setLoading(false)
     }
@@ -120,6 +130,7 @@ export function ConfigWizard({ code, isAuthenticated }: ConfigWizardProps) {
               disabled={loading}
               className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-lg py-6 h-auto mt-6"
             >
+              {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
               {loading ? 'Ativando...' : (isAuthenticated ? 'Ativar minha placa' : 'Fazer Login e Ativar')}
             </Button>
           </div>

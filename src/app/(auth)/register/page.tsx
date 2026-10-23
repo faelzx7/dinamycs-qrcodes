@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { signUp } from '@/actions/auth.actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,7 +10,9 @@ import Link from 'next/link'
 import { APP_NAME } from '@/lib/constants'
 import { Loader2 } from 'lucide-react'
 
-export default function RegisterPage() {
+function RegisterContent() {
+  const searchParams = useSearchParams()
+  const redirectParam = searchParams.get('redirect')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -57,6 +60,7 @@ export default function RegisterPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        <input type="hidden" name="redirect" value={redirectParam || ''} />
         {error && (
           <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
             {error}
@@ -91,10 +95,21 @@ export default function RegisterPage() {
 
       <div className="text-center text-sm">
         Já tem uma conta?{' '}
-        <Link href="/login" className="font-medium text-primary hover:underline">
+        <Link 
+          href={redirectParam ? `/login?redirect=${encodeURIComponent(redirectParam)}` : "/login"} 
+          className="font-medium text-primary hover:underline"
+        >
           Fazer login
         </Link>
       </div>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center"><Loader2 className="mx-auto h-6 w-6 animate-spin" /></div>}>
+      <RegisterContent />
+    </Suspense>
   )
 }

@@ -126,7 +126,7 @@ export const customUrlSchema = safeUrlSchema;
 
 export const configureQRSchema = z.object({
   code: z.string().min(1).max(10),
-  name: z.string().min(3, 'O nome deve ter no mínimo 3 caracteres').max(100, 'Nome muito longo'),
+  name: z.string().min(1, 'O nome é obrigatório').max(100, 'Nome muito longo'),
   destination_type: z.enum(['whatsapp', 'instagram', 'google', 'website', 'custom']),
   destination_url: safeUrlSchema,
 });
@@ -150,7 +150,7 @@ export const generateBatchSchema = z.object({
 
 export const updateDestinationSchema = z.object({
   qr_id: z.string().uuid('ID inválido'),
-  name: z.string().min(3, 'O nome deve ter no mínimo 3 caracteres').max(100, 'Nome muito longo'),
+  name: z.string().min(1, 'O nome é obrigatório').max(100, 'Nome muito longo'),
   destination_type: z.enum(['whatsapp', 'instagram', 'google', 'website', 'custom']),
   destination_url: safeUrlSchema,
 });

@@ -7,6 +7,7 @@ export async function signUp(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
   const full_name = formData.get('full_name') as string
+  const redirectTo = formData.get('redirect') as string
 
   if (!email || !password || !full_name) {
     return { error: 'Preencha todos os campos.' }
@@ -28,12 +29,16 @@ export async function signUp(formData: FormData) {
     return { error: error.message }
   }
 
-  redirect('/login?registered=true')
+  const target = redirectTo 
+    ? `/login?registered=true&redirect=${encodeURIComponent(redirectTo)}` 
+    : '/login?registered=true'
+  redirect(target)
 }
 
 export async function signIn(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
+  const redirectTo = (formData.get('redirect') as string) || '/dashboard'
 
   if (!email || !password) {
     return { error: 'Preencha todos os campos.' }
@@ -50,7 +55,7 @@ export async function signIn(formData: FormData) {
     return { error: error.message }
   }
 
-  redirect('/dashboard')
+  redirect(redirectTo.startsWith('/') ? redirectTo : '/dashboard')
 }
 
 export async function signOut() {

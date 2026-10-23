@@ -46,6 +46,7 @@ function LoginContent() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        <input type="hidden" name="redirect" value={searchParams.get('redirect') || ''} />
         {registered && (
           <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-md">
             Conta criada! Você já pode fazer login.
@@ -78,7 +79,10 @@ function LoginContent() {
 
       <div className="text-center text-sm">
         Não tem uma conta?{' '}
-        <Link href="/register" className="font-medium text-primary hover:underline">
+        <Link 
+          href={searchParams.get('redirect') ? `/register?redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : "/register"} 
+          className="font-medium text-primary hover:underline"
+        >
           Cadastre-se
         </Link>
       </div>
